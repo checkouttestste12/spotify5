@@ -1,16 +1,12 @@
-// Estado global da aplicação
-let currentStep = 1;
-let selectedPlan = null;
-let formData = {
-    email: '',
-    password: '',
-    plan: '',
-    reason: '',
-    cardName: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
+// Configurações da aplicação
+const CONFIG = {
+    SPOTIFY_ACCOUNT_URL: 'https://www.example.com/seu-link-de-redirecionamento-aqui/',
+    SPOTIFY_SUPPORT_URL: 'https://support.spotify.com/br-pt/article/cancel-premium/',
+    REDIRECT_DELAY: 2000 // 2 segundos
 };
+
+// Estado da aplicação
+let isRedirecting = false;
 
 // Inicialização quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,585 +16,440 @@ document.addEventListener('DOMContentLoaded', function() {
 // Função de inicialização
 function initializeApp() {
     setupEventListeners();
-    setupPlanSelection();
-    updateProgressBar();
-    showStep(1);
+    setupScrollAnimations();
+    setupHeaderScroll();
 }
 
 // Configurar event listeners
 function setupEventListeners() {
-    // Form de login
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLoginSubmit);
+    // Botão principal de cancelamento
+    const cancelBtn = document.getElementById('cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', handleCancelClick);
     }
 
-    // Form de motivo
-    const reasonForm = document.getElementById('reason-form');
-    if (reasonForm) {
-        reasonForm.addEventListener('submit', handleReasonSubmit);
+    // Modal de confirmação
+    const modal = document.getElementById('cancel-modal');
+    const modalClose = document.getElementById('modal-close');
+    const modalCancel = document.getElementById('modal-cancel');
+    const modalConfirm = document.getElementById('modal-confirm');
+
+    if (modalClose) {
+        modalClose.addEventListener('click', closeModal);
     }
 
-    // Form de pagamento
-    const paymentForm = document.getElementById('payment-form');
-    if (paymentForm) {
-        paymentForm.addEventListener('submit', handlePaymentSubmit);
+    if (modalCancel) {
+        modalCancel.addEventListener('click', closeModal);
     }
 
-    // Formatação automática de campos
-    setupInputFormatting();
+    if (modalConfirm) {
+        modalConfirm.addEventListener('click', handleConfirmRedirect);
+    }
+
+    // Fechar modal clicando fora
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Navegação suave
+    setupSmoothScrolling();
+
+    // Tecla ESC para fechar modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
 }
 
-// Configurar seleção de planos
-function setupPlanSelection() {
-    const planElements = document.querySelectorAll('.subscription-plan');
-    const continueBtn = document.getElementById('continue-btn');
+// Configurar navegação suave
+function setupSmoothScrolling() {
+    const navLinks = document.querySelectorAll('a[href^="#"]');
     
-    planElements.forEach(plan => {
-        plan.addEventListener('click', function() {
-            // Remove seleção anterior
-            planElements.forEach(p => p.classList.remove('selected'));
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
             
-            // Adiciona seleção ao plano clicado
-            this.classList.add('selected');
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
             
-            // Armazena o plano selecionado
-            selectedPlan = this.getAttribute('data-plan');
-            formData.plan = selectedPlan;
-            
-            // Habilita o botão continuar
-            if (continueBtn) {
-                continueBtn.disabled = false;
-            }
-            
-            // Adiciona feedback visual
-            this.style.transform = 'scale(1.02)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 200);
-        });
-        
-        // Adiciona efeito hover melhorado
-        plan.addEventListener('mouseenter', function() {
-            if (!this.classList.contains('selected')) {
-                this.style.transform = 'translateY(-4px)';
-            }
-        });
-        
-        plan.addEventListener('mouseleave', function() {
-            if (!this.classList.contains('selected')) {
-                this.style.transform = '';
+            if (targetElement) {
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const targetPosition = targetElement.offsetTop - headerHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
             }
         });
     });
 }
 
-// Configurar formatação automática de inputs
-function setupInputFormatting() {
-    // Formatação do número do cartão
-    const cardNumberInput = document.getElementById('card-number');
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-            if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
-            e.target.value = formattedValue;
-        });
-    }
+// Configurar efeito do header no scroll
+function setupHeaderScroll() {
+    const header = document.querySelector('.header');
+    let lastScrollY = window.scrollY;
 
-    // Formatação da data de validade
-    const expiryInput = document.getElementById('expiry-date');
-    if (expiryInput) {
-        expiryInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2, 4);
-            }
-            e.target.value = value;
-        });
-    }
-
-    // Formatação do CVV (apenas números)
-    const cvvInput = document.getElementById('cvv');
-    if (cvvInput) {
-        cvvInput.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-    }
-}
-
-// Manipular submit do form de login
-function handleLoginSubmit(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    // Validação básica
-    if (!email || !password) {
-        showError('Por favor, preencha todos os campos.');
-        return;
-    }
-
-    if (!isValidEmail(email)) {
-        showError('Por favor, insira um email válido.');
-        return;
-    }
-
-    // Salvar dados
-    formData.email = email;
-    formData.password = password;
-
-    // Simular loading
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    showLoading(submitBtn, true);
-
-    setTimeout(() => {
-        showLoading(submitBtn, false);
-        nextStep();
-    }, 1500);
-}
-
-// Manipular submit do form de motivo
-function handleReasonSubmit(e) {
-    e.preventDefault();
-    
-    const selectedReason = document.querySelector('input[name="reason"]:checked');
-    
-    if (!selectedReason) {
-        showError('Por favor, selecione um motivo.');
-        return;
-    }
-
-    formData.reason = selectedReason.value;
-    nextStep();
-}
-
-// Manipular submit do form de pagamento
-function handlePaymentSubmit(e) {
-    e.preventDefault();
-    
-    const cardName = document.getElementById('card-name').value;
-    const cardNumber = document.getElementById('card-number').value;
-    const expiryDate = document.getElementById('expiry-date').value;
-    const cvv = document.getElementById('cvv').value;
-
-    // Validações
-    if (!cardName || !cardNumber || !expiryDate || !cvv) {
-        showError('Por favor, preencha todos os campos do cartão.');
-        return;
-    }
-
-    if (cardNumber.replace(/\s/g, '').length < 16) {
-        showError('Número do cartão inválido.');
-        return;
-    }
-
-    if (!isValidExpiryDate(expiryDate)) {
-        showError('Data de validade inválida.');
-        return;
-    }
-
-    if (cvv.length < 3) {
-        showError('CVV inválido.');
-        return;
-    }
-
-    // Salvar dados
-    formData.cardName = cardName;
-    formData.cardNumber = cardNumber;
-    formData.expiryDate = expiryDate;
-    formData.cvv = cvv;
-
-    // Simular processamento de pagamento
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    showLoading(submitBtn, true);
-
-    setTimeout(() => {
-        showLoading(submitBtn, false);
-        nextStep();
-    }, 3000); // 3 segundos para simular processamento
-}
-
-// Função para avançar para próxima etapa
-function nextStep() {
-    // Validação específica para o step 2 (seleção de plano)
-    if (currentStep === 2 && !selectedPlan) {
-        showError('Por favor, selecione um plano antes de continuar.');
-        return;
-    }
-    
-    if (currentStep < 5) {
-        currentStep++;
-        showStep(currentStep);
-        updateProgressBar();
+    window.addEventListener('scroll', function() {
+        const currentScrollY = window.scrollY;
         
-        // Feedback de sucesso ao selecionar plano
-        if (currentStep === 3 && selectedPlan) {
-            const planNames = {
-                'individual': 'Premium Individual',
-                'student': 'Premium Universitário',
-                'duo': 'Premium Duo',
-                'family': 'Premium Família'
-            };
-            showSuccess(`Plano ${planNames[selectedPlan]} selecionado com sucesso!`);
+        if (currentScrollY > 100) {
+            header.style.backgroundColor = 'rgba(0, 0, 0, 0.98)';
+            header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.3)';
+        } else {
+            header.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+            header.style.boxShadow = 'none';
         }
-    }
-}
 
-// Função para voltar para etapa anterior
-function previousStep() {
-    if (currentStep > 1) {
-        currentStep--;
-        showStep(currentStep);
-        updateProgressBar();
-    }
-}
-
-// Mostrar etapa específica
-function showStep(stepNumber) {
-    // Esconder todas as etapas
-    const allSteps = document.querySelectorAll('.step');
-    allSteps.forEach(step => {
-        step.classList.remove('active');
+        lastScrollY = currentScrollY;
     });
-
-    // Mostrar etapa atual
-    const currentStepElement = document.getElementById(`step-${stepNumber}`);
-    if (currentStepElement) {
-        currentStepElement.classList.add('active');
-    }
-
-    // Scroll para o topo
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Reconfigurar listeners se necessário
-    if (stepNumber === 2) {
-        setupPlanSelection();
-    }
 }
 
-// Atualizar barra de progresso
-function updateProgressBar() {
-    const progressFill = document.getElementById('progress-fill');
-    const currentStepSpan = document.getElementById('current-step');
-    const progressPercentSpan = document.getElementById('progress-percent');
+// Configurar animações de scroll
+function setupScrollAnimations() {
+    // Intersection Observer para animações
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
 
-    if (progressFill && currentStepSpan && progressPercentSpan) {
-        const percentage = (currentStep / 5) * 100;
-        
-        progressFill.style.width = `${percentage}%`;
-        currentStepSpan.textContent = currentStep;
-        progressPercentSpan.textContent = Math.round(percentage);
-    }
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observar elementos para animação
+    const animatedElements = document.querySelectorAll('.plan-card, .faq-item');
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
 }
 
-// Validar email
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-// Validar data de validade
-function isValidExpiryDate(date) {
-    if (!/^\d{2}\/\d{2}$/.test(date)) return false;
+// Manipular clique no botão de cancelamento
+function handleCancelClick(e) {
+    e.preventDefault();
     
-    const [month, year] = date.split('/');
-    const monthNum = parseInt(month, 10);
-    const yearNum = parseInt('20' + year, 10);
-    
-    if (monthNum < 1 || monthNum > 12) return false;
-    
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-    
-    if (yearNum < currentYear || (yearNum === currentYear && monthNum < currentMonth)) {
-        return false;
-    }
-    
-    return true;
-}
-
-// Mostrar estado de loading no botão
-function showLoading(button, isLoading) {
-    if (isLoading) {
-        button.classList.add('loading');
-        button.disabled = true;
-    } else {
-        button.classList.remove('loading');
-        button.disabled = false;
-    }
-}
-
-// Mostrar mensagem de erro
-function showError(message) {
-    // Remover erro anterior se existir
-    const existingError = document.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
+    if (isRedirecting) {
+        return;
     }
 
-    // Criar elemento de erro
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.style.cssText = `
-        background-color: rgba(220, 38, 38, 0.1);
-        border: 1px solid rgba(220, 38, 38, 0.3);
-        color: #fca5a5;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 14px;
-        animation: fadeIn 0.3s ease-out;
-    `;
-    errorDiv.textContent = message;
-
-    // Inserir antes do primeiro botão do step atual
-    const currentStepElement = document.getElementById(`step-${currentStep}`);
-    const firstButton = currentStepElement.querySelector('.btn');
-    if (firstButton) {
-        firstButton.parentNode.insertBefore(errorDiv, firstButton);
-    }
-
-    // Remover erro após 5 segundos
+    // Adicionar feedback visual
+    const button = e.target.closest('.btn');
+    button.style.transform = 'scale(0.95)';
+    
     setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.remove();
-        }
-    }, 5000);
+        button.style.transform = '';
+        showModal();
+    }, 150);
+}
+
+// Mostrar modal de confirmação
+function showModal() {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Focar no botão de confirmação
+        setTimeout(() => {
+            const confirmBtn = document.getElementById('modal-confirm');
+            if (confirmBtn) {
+                confirmBtn.focus();
+            }
+        }, 100);
+    }
+}
+
+// Fechar modal
+function closeModal() {
+    const modal = document.getElementById('cancel-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// Manipular confirmação de redirecionamento
+function handleConfirmRedirect() {
+    if (isRedirecting) {
+        return;
+    }
+
+    isRedirecting = true;
+    
+    const confirmBtn = document.getElementById('modal-confirm');
+    const cancelBtn = document.getElementById('modal-cancel');
+    
+    // Desabilitar botões
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `
+            <svg class="btn-icon loading-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            Redirecionando...
+        `;
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+    }
+
+    // Adicionar animação de loading
+    const loadingIcon = document.querySelector('.loading-icon');
+    if (loadingIcon) {
+        loadingIcon.style.animation = 'spin 1s linear infinite';
+    }
+
+    // Mostrar mensagem de redirecionamento
+    showRedirectMessage();
+
+    // Redirecionar após delay
+    setTimeout(() => {
+        redirectToSpotify();
+    }, CONFIG.REDIRECT_DELAY);
+}
+
+// Mostrar mensagem de redirecionamento
+function showRedirectMessage() {
+    const modalBody = document.querySelector('.modal-body');
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            <p>
+                <strong>Redirecionando para o Spotify...</strong><br>
+                Você será levado para a página oficial da sua conta onde poderá cancelar sua assinatura com segurança.
+            </p>
+            <div class="redirect-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <p class="progress-text">Aguarde alguns segundos...</p>
+            </div>
+        `;
+
+        // Adicionar estilos para a barra de progresso
+        const style = document.createElement('style');
+        style.textContent = `
+            .redirect-progress {
+                margin-top: 20px;
+            }
+            .progress-bar {
+                width: 100%;
+                height: 4px;
+                background-color: #404040;
+                border-radius: 2px;
+                overflow: hidden;
+                margin-bottom: 8px;
+            }
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #1ED760, #1DB954);
+                border-radius: 2px;
+                animation: progressFill ${CONFIG.REDIRECT_DELAY}ms linear forwards;
+            }
+            .progress-text {
+                font-size: 14px;
+                color: #b3b3b3;
+                margin: 0;
+            }
+            @keyframes progressFill {
+                from { width: 0%; }
+                to { width: 100%; }
+            }
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Redirecionar para o Spotify
+function redirectToSpotify() {
+    try {
+        // Log para debug (pode ser removido em produção)
+        console.log('Redirecionando para:', CONFIG.SPOTIFY_ACCOUNT_URL);
+        
+        // Abrir em nova aba para melhor experiência do usuário
+        window.open(CONFIG.SPOTIFY_ACCOUNT_URL, '_blank', 'noopener,noreferrer');
+        
+        // Fechar modal após redirecionamento
+        setTimeout(() => {
+            closeModal();
+            isRedirecting = false;
+            showSuccessMessage();
+        }, 500);
+        
+    } catch (error) {
+        console.error('Erro ao redirecionar:', error);
+        showErrorMessage();
+        isRedirecting = false;
+    }
 }
 
 // Mostrar mensagem de sucesso
-function showSuccess(message) {
-    // Remover sucesso anterior se existir
-    const existingSuccess = document.querySelector('.success-message');
-    if (existingSuccess) {
-        existingSuccess.remove();
-    }
-
-    const successDiv = document.createElement('div');
-    successDiv.className = 'success-message';
-    successDiv.style.cssText = `
-        background-color: rgba(34, 197, 94, 0.1);
-        border: 1px solid rgba(34, 197, 94, 0.3);
-        color: #86efac;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 14px;
-        animation: fadeIn 0.3s ease-out;
+function showSuccessMessage() {
+    const message = document.createElement('div');
+    message.className = 'success-notification';
+    message.innerHTML = `
+        <div class="notification-content">
+            <svg class="notification-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <div class="notification-text">
+                <strong>Redirecionamento realizado!</strong>
+                <p>A página do Spotify foi aberta em uma nova aba.</p>
+            </div>
+        </div>
     `;
-    successDiv.textContent = message;
 
-    const currentStepElement = document.getElementById(`step-${currentStep}`);
-    const cardContent = currentStepElement.querySelector('.card-content');
-    if (cardContent) {
-        cardContent.insertBefore(successDiv, cardContent.firstChild);
-    }
-
-    setTimeout(() => {
-        if (successDiv.parentNode) {
-            successDiv.remove();
+    // Adicionar estilos para a notificação
+    const style = document.createElement('style');
+    style.textContent = `
+        .success-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1ED760, #1DB954);
+            color: #000000;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(30, 215, 96, 0.3);
+            z-index: 3000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 300px;
         }
-    }, 3000);
+        .notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .notification-text strong {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .notification-text p {
+            font-size: 14px;
+            margin: 0;
+            opacity: 0.8;
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(message);
+
+    // Remover notificação após 5 segundos
+    setTimeout(() => {
+        message.style.animation = 'slideInRight 0.3s ease-out reverse';
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 300);
+    }, 5000);
 }
 
-// Função para obter informações do plano selecionado
-function getSelectedPlanInfo() {
-    const planInfo = {
-        'individual': {
-            name: 'Spotify Premium Individual',
-            price: 'R$ 21,90/mês',
-            features: [
-                'Música sem anúncios',
-                'Download para ouvir offline',
-                'Reprodução em qualquer ordem',
-                'Qualidade de áudio superior',
-                '1 conta Premium'
-            ]
-        },
-        'student': {
-            name: 'Spotify Premium Universitário',
-            price: 'R$ 11,90/mês',
-            features: [
-                'Música sem anúncios',
-                'Download para ouvir offline',
-                'Reprodução em qualquer ordem',
-                'Qualidade de áudio superior',
-                'Desconto para estudantes verificados'
-            ]
-        },
-        'duo': {
-            name: 'Spotify Premium Duo',
-            price: 'R$ 27,90/mês',
-            features: [
-                'Música sem anúncios',
-                'Download para ouvir offline',
-                'Reprodução em qualquer ordem',
-                'Qualidade de áudio superior',
-                '2 contas Premium para casais'
-            ]
-        },
-        'family': {
-            name: 'Spotify Premium Família',
-            price: 'R$ 34,90/mês',
-            features: [
-                'Música sem anúncios',
-                'Download para ouvir offline',
-                'Reprodução em qualquer ordem',
-                'Qualidade de áudio superior',
-                'Até 6 contas Premium ou Kids',
-                'Controle de conteúdo explícito',
-                'Acesso ao Spotify Kids'
-            ]
-        }
-    };
-    
-    return selectedPlan ? planInfo[selectedPlan] : null;
+// Mostrar mensagem de erro
+function showErrorMessage() {
+    alert('Erro ao redirecionar. Por favor, acesse manualmente: ' + CONFIG.SPOTIFY_ACCOUNT_URL);
+    closeModal();
 }
 
 // Função para debug (pode ser removida em produção)
-function debugFormData() {
-    console.log('Form Data:', formData);
-    console.log('Current Step:', currentStep);
-    console.log('Selected Plan:', selectedPlan);
-    console.log('Selected Plan Info:', getSelectedPlanInfo());
+function debugInfo() {
+    console.log('Spotify Landing Page - Debug Info:');
+    console.log('- Spotify Account URL:', CONFIG.SPOTIFY_ACCOUNT_URL);
+    console.log('- Spotify Support URL:', CONFIG.SPOTIFY_SUPPORT_URL);
+    console.log('- Redirect Delay:', CONFIG.REDIRECT_DELAY + 'ms');
+    console.log('- Is Redirecting:', isRedirecting);
 }
 
-// Adicionar alguns event listeners globais para melhor UX
-document.addEventListener('keydown', function(e) {
-    // Permitir navegação com Enter em campos de input
-    if (e.key === 'Enter') {
-        const activeElement = document.activeElement;
-        if (activeElement && activeElement.tagName === 'INPUT') {
-            const form = activeElement.closest('form');
-            if (form) {
-                const submitBtn = form.querySelector('button[type="submit"]');
-                if (submitBtn && !submitBtn.disabled) {
-                    submitBtn.click();
-                }
-            }
-        }
-    }
+// Adicionar função de debug ao objeto global (apenas para desenvolvimento)
+if (typeof window !== 'undefined') {
+    window.spotifyLandingDebug = debugInfo;
+}
+
+// Prevenção de ataques XSS básicos
+function sanitizeInput(input) {
+    const div = document.createElement('div');
+    div.textContent = input;
+    return div.innerHTML;
+}
+
+// Verificação de integridade da página
+function checkPageIntegrity() {
+    const requiredElements = [
+        'cancel-btn',
+        'cancel-modal',
+        'modal-confirm'
+    ];
+
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
     
-    // Navegação com setas nos planos (step 2)
-    if (currentStep === 2 && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-        e.preventDefault();
-        const plans = document.querySelectorAll('.subscription-plan');
-        const currentSelected = document.querySelector('.subscription-plan.selected');
-        let currentIndex = currentSelected ? Array.from(plans).indexOf(currentSelected) : -1;
-        
-        if (e.key === 'ArrowDown') {
-            currentIndex = (currentIndex + 1) % plans.length;
-        } else {
-            currentIndex = currentIndex <= 0 ? plans.length - 1 : currentIndex - 1;
-        }
-        
-        plans[currentIndex].click();
+    if (missingElements.length > 0) {
+        console.warn('Elementos obrigatórios não encontrados:', missingElements);
+    }
+
+    return missingElements.length === 0;
+}
+
+// Verificar integridade na inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    if (!checkPageIntegrity()) {
+        console.error('Falha na verificação de integridade da página');
     }
 });
 
-// Prevenir envio de formulário com Enter em campos específicos
-document.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && e.target.type === 'radio') {
-        e.preventDefault();
-        const form = e.target.closest('form');
-        if (form) {
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.click();
-            }
-        }
-    }
-});
+// Adicionar meta informações para SEO e segurança
+function addMetaTags() {
+    const metaTags = [
+        { name: 'robots', content: 'noindex, nofollow' },
+        { name: 'referrer', content: 'no-referrer' },
+        { 'http-equiv': 'X-Content-Type-Options', content: 'nosniff' },
+        { 'http-equiv': 'X-Frame-Options', content: 'DENY' }
+    ];
 
-// Função para resetar o formulário (útil para testes)
-function resetForm() {
-    currentStep = 1;
-    selectedPlan = null;
-    formData = {
-        email: '',
-        password: '',
-        plan: '',
-        reason: '',
-        cardName: '',
-        cardNumber: '',
-        expiryDate: '',
-        cvv: ''
-    };
-    
-    // Limpar todos os inputs
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        if (input.type === 'radio') {
-            input.checked = false;
-        } else {
-            input.value = '';
-        }
+    metaTags.forEach(tag => {
+        const meta = document.createElement('meta');
+        Object.keys(tag).forEach(key => {
+            meta.setAttribute(key, tag[key]);
+        });
+        document.head.appendChild(meta);
     });
-    
-    // Remover seleção dos planos
-    const plans = document.querySelectorAll('.subscription-plan');
-    plans.forEach(plan => plan.classList.remove('selected'));
-    
-    // Desabilitar botão continuar
-    const continueBtn = document.getElementById('continue-btn');
-    if (continueBtn) {
-        continueBtn.disabled = true;
-    }
-    
-    showStep(1);
-    updateProgressBar();
 }
 
-// Adicionar função para simular diferentes cenários de teste
-function simulateFormFill() {
-    // Preencher dados de teste
-    document.getElementById('email').value = 'usuario@teste.com';
-    document.getElementById('password').value = 'minhasenha123';
-    
-    // Simular seleção de plano
-    setTimeout(() => {
-        if (currentStep === 2) {
-            const firstPlan = document.querySelector('.subscription-plan');
-            if (firstPlan) firstPlan.click();
-        }
-    }, 100);
-    
-    // Simular seleção de motivo
-    setTimeout(() => {
-        if (currentStep === 3) {
-            const firstRadio = document.querySelector('input[name="reason"]');
-            if (firstRadio) firstRadio.checked = true;
-        }
-    }, 100);
-    
-    // Preencher dados do cartão
-    setTimeout(() => {
-        if (currentStep === 4) {
-            document.getElementById('card-name').value = 'Maria Silva';
-            document.getElementById('card-number').value = '4532 1234 5678 9012';
-            document.getElementById('expiry-date').value = '12/28';
-            document.getElementById('cvv').value = '456';
-        }
-    }, 100);
-}
-
-// Função para selecionar plano programaticamente
-function selectPlan(planType) {
-    const plan = document.querySelector(`[data-plan="${planType}"]`);
-    if (plan) {
-        plan.click();
-        return true;
-    }
-    return false;
-}
-
-// Expor algumas funções globalmente para debug
-window.debugFormData = debugFormData;
-window.resetForm = resetForm;
-window.simulateFormFill = simulateFormFill;
-window.selectPlan = selectPlan;
-window.getSelectedPlanInfo = getSelectedPlanInfo;
+// Adicionar meta tags na inicialização
+document.addEventListener('DOMContentLoaded', addMetaTags);
 
