@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Assinatura - Spotify</title>
+    <meta name="description" content="Gerencie sua assinatura Spotify Premium. Cancele, altere ou atualize seu plano de forma rápida e segura.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231ED760'><path d='M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.348-1.435-5.304-1.76-8.785-.964-.335.077-.67-.133-.746-.47-.077-.334.132-.67.47-.746 3.809-.871 7.077-.496 9.713 1.115.293.18.386.563.206.858zm1.223-2.723c-.226.367-.706.482-1.073.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.125-.849-.106-.973-.517-.125-.413.106-.849.517-.973 3.632-1.102 8.147-.568 11.238 1.327.366.226.482.707.256 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166C9.04 7.347 14.964 7.548 18.505 9.73c.423.26.559.82.298 1.244-.26.424-.82.56-1.244.298z'/></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.348-1.435-5.304-1.76-8.785-.964-.335.077-.67-.133-.746-.47-.077-.334.132-.67.47-.746 3.809-.871 7.077-.496 9.713 1.115.293.18.386.563.206.858zm1.223-2.723c-.226.367-.706.482-1.073.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.125-.849-.106-.973-.517-.125-.413.106-.849.517-.973 3.632-1.102 8.147-.568 11.238 1.327.366.226.482.707.256 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166C9.04 7.347 14.964 7.548 18.505 9.73c.423.26.559.82.298 1.244-.26.424-.82.56-1.244.298z"/>
+                </svg>
+                <span class="logo-text">Spotify</span>
+            </div>
+            <nav class="nav">
+                <a href="#planos" class="nav-link">Planos</a>
+                <a href="#ajuda" class="nav-link">Ajuda</a>
+                <a href="#suporte" class="nav-link">Suporte</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Gerencie sua Assinatura Spotify</h1>
+                <p class="hero-description">
+                    Controle total sobre seu plano Premium. Cancele, altere ou atualize sua assinatura 
+                    de forma rápida e segura através da sua conta oficial.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" id="cancel-btn">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                        Cancelar Assinatura
+                    </button>
+                    <a href="#planos" class="btn btn-secondary">Ver Planos</a>
+                </div>
+                <div class="security-badge">
+                    <svg class="security-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    <span>Redirecionamento seguro para página oficial</span>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="spotify-interface">
+                            <div class="interface-header">
+                                <div class="interface-logo"></div>
+                                <span>Spotify</span>
+                            </div>
+                            <div class="interface-content">
+                                <div class="interface-card">
+                                    <h3>Premium Individual</h3>
+                                    <p>R$ 21,90/mês</p>
+                                </div>
+                                <div class="interface-button">Gerenciar Plano</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plans Section -->
+    <section class="plans" id="planos">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Conheça os Planos Spotify</h2>
+                <p class="section-description">
+                    Escolha o plano que melhor se adapta ao seu estilo de vida musical
+                </p>
+            </div>
+            <div class="plans-grid">
+                <!-- Individual Plan -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <h3 class="plan-title">Premium Individual</h3>
+                        <div class="plan-price">
+                            <span class="price-value">R$ 21,90</span>
+                            <span class="price-period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>Música sem anúncios</li>
+                        <li>Download para ouvir offline</li>
+                        <li>Reprodução em qualquer ordem</li>
+                        <li>Qualidade de áudio superior</li>
+                        <li>1 conta Premium</li>
+                    </ul>
+                    <div class="plan-badge">Mais Popular</div>
+                </div>
+
+                <!-- Student Plan -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <h3 class="plan-title">Premium Universitário</h3>
+                        <div class="plan-price">
+                            <span class="price-value">R$ 11,90</span>
+                            <span class="price-period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>Música sem anúncios</li>
+                        <li>Download para ouvir offline</li>
+                        <li>Reprodução em qualquer ordem</li>
+                        <li>Qualidade de áudio superior</li>
+                        <li>Desconto para estudantes</li>
+                    </ul>
+                </div>
+
+                <!-- Duo Plan -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <h3 class="plan-title">Premium Duo</h3>
+                        <div class="plan-price">
+                            <span class="price-value">R$ 27,90</span>
+                            <span class="price-period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>Música sem anúncios</li>
+                        <li>Download para ouvir offline</li>
+                        <li>Reprodução em qualquer ordem</li>
+                        <li>Qualidade de áudio superior</li>
+                        <li>2 contas Premium</li>
+                    </ul>
+                </div>
+
+                <!-- Family Plan -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <h3 class="plan-title">Premium Família</h3>
+                        <div class="plan-price">
+                            <span class="price-value">R$ 34,90</span>
+                            <span class="price-period">/mês</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>Música sem anúncios</li>
+                        <li>Download para ouvir offline</li>
+                        <li>Reprodução em qualquer ordem</li>
+                        <li>Qualidade de áudio superior</li>
+                        <li>Até 6 contas Premium</li>
+                        <li>Controle parental</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help Section -->
+    <section class="help" id="ajuda">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Perguntas Frequentes</h2>
+                <p class="section-description">
+                    Tire suas dúvidas sobre cancelamento e gerenciamento de assinatura
+                </p>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3 class="faq-question">Como cancelar minha assinatura?</h3>
+                    <p class="faq-answer">
+                        Acesse sua conta oficial do Spotify e selecione "Cancelar plano" na seção "Seu plano". 
+                        O processo é simples e seguro.
+                    </p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">Quando a assinatura será cancelada?</h3>
+                    <p class="faq-answer">
+                        Sua conta continuará no Premium até a próxima data de cobrança. 
+                        Depois disso, ela passará para a versão grátis automaticamente.
+                    </p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">Vou perder minhas playlists?</h3>
+                    <p class="faq-answer">
+                        Não! Suas playlists e músicas salvas permanecerão na sua conta. 
+                        Você ainda poderá acessá-las na versão grátis.
+                    </p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">Posso reativar depois?</h3>
+                    <p class="faq-answer">
+                        Sim! Você pode reativar sua assinatura Premium a qualquer momento 
+                        através da sua conta do Spotify.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Section -->
+    <section class="support" id="suporte">
+        <div class="container">
+            <div class="support-content">
+                <div class="support-text">
+                    <h2 class="support-title">Precisa de Ajuda?</h2>
+                    <p class="support-description">
+                        Nossa equipe de suporte está sempre disponível para ajudar você 
+                        com qualquer dúvida sobre sua assinatura.
+                    </p>
+                    <div class="support-links">
+                        <a href="https://support.spotify.com/br-pt/" class="support-link" target="_blank" rel="noopener">
+                            <svg class="support-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            Central de Ajuda
+                        </a>
+                        <a href="https://community.spotify.com/" class="support-link" target="_blank" rel="noopener">
+                            <svg class="support-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.996 2.996 0 0 0 17.06 6c-.8 0-1.54.37-2.01.97L12 10.5 8.95 6.97A2.996 2.996 0 0 0 6.06 6c-.8 0-1.54.37-2.01.97L1.5 16H4v6h2v-6h2.5l2.5-3.5L13.5 16H16v6h4z"/>
+                            </svg>
+                            Comunidade
+                        </a>
+                    </div>
+                </div>
+                <div class="support-visual">
+                    <div class="support-card">
+                        <div class="support-card-header">
+                            <div class="support-avatar"></div>
+                            <div class="support-info">
+                                <h4>Suporte Spotify</h4>
+                                <span>Online agora</span>
+                            </div>
+                        </div>
+                        <div class="support-card-content">
+                            <p>Olá! Como posso ajudar você hoje?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <svg class="footer-logo-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.348-1.435-5.304-1.76-8.785-.964-.335.077-.67-.133-.746-.47-.077-.334.132-.67.47-.746 3.809-.871 7.077-.496 9.713 1.115.293.18.386.563.206.858zm1.223-2.723c-.226.367-.706.482-1.073.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.125-.849-.106-.973-.517-.125-.413.106-.849.517-.973 3.632-1.102 8.147-.568 11.238 1.327.366.226.482.707.256 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166C9.04 7.347 14.964 7.548 18.505 9.73c.423.26.559.82.298 1.244-.26.424-.82.56-1.244.298z"/>
+                        </svg>
+                        <span>Spotify</span>
+                    </div>
+                    <p class="footer-description">
+                        Milhões de músicas e podcasts. Sem cartão de crédito necessário.
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Empresa</h4>
+                        <a href="https://www.spotify.com/br-pt/about-us/contact/" target="_blank" rel="noopener">Sobre</a>
+                        <a href="https://www.lifeatspotify.com/" target="_blank" rel="noopener">Empregos</a>
+                        <a href="https://newsroom.spotify.com/" target="_blank" rel="noopener">For the Record</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Comunidades</h4>
+                        <a href="https://artists.spotify.com/" target="_blank" rel="noopener">Para Artistas</a>
+                        <a href="https://developer.spotify.com/" target="_blank" rel="noopener">Desenvolvedores</a>
+                        <a href="https://ads.spotify.com/" target="_blank" rel="noopener">Publicidade</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Links Úteis</h4>
+                        <a href="https://support.spotify.com/" target="_blank" rel="noopener">Suporte</a>
+                        <a href="https://www.spotify.com/br-pt/download/" target="_blank" rel="noopener">App móvel grátis</a>
+                        <a href="https://www.spotify.com/br-pt/legal/" target="_blank" rel="noopener">Legal</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-legal">
+                    <a href="https://www.spotify.com/br-pt/legal/privacy-policy/" target="_blank" rel="noopener">Política de Privacidade</a>
+                    <a href="https://www.spotify.com/br-pt/legal/end-user-agreement/" target="_blank" rel="noopener">Termos de Uso</a>
+                    <a href="https://www.spotify.com/br-pt/legal/cookies-policy/" target="_blank" rel="noopener">Política de Cookies</a>
+                </div>
+                <div class="footer-copyright">
+                    <p>&copy; 2025 Spotify AB</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal" id="cancel-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Redirecionamento Seguro</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                </div>
+                <p>
+                    Você será redirecionado para a página oficial da sua conta Spotify, 
+                    onde poderá cancelar sua assinatura de forma segura.
+                </p>
+                <div class="modal-warning">
+                    <svg class="warning-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                    <span>Esta página não coleta dados pessoais ou de pagamento</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">Cancelar</button>
+                <button class="btn btn-primary" id="modal-confirm">Continuar para Spotify</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
